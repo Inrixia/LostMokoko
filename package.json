@@ -1,0 +1,15 @@
+{
+	"name": "lablackmarket",
+	"version": "1.0.0",
+	"description": "A discord bot for facilitating trading items in Lost Ark",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Inrixia/LABlackmarket.git"
+	},
+	"author": "@Inrixia",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/Inrixia/LABlackmarket/issues"
+	},
+	"homepage": "https://github.com/Inrixia/LABlackmarket#readme"
+}
