@@ -2,6 +2,8 @@
 	"name": "lablackmarket",
 	"version": "1.0.0",
 	"description": "A discord bot for facilitating trading items in Lost Ark",
+	"main": "src/index.ts",
+	"type": "module",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Inrixia/LABlackmarket.git"
@@ -11,5 +13,19 @@
 	"bugs": {
 		"url": "https://github.com/Inrixia/LABlackmarket/issues"
 	},
-	"homepage": "https://github.com/Inrixia/LABlackmarket#readme"
+	"scripts": {
+		"build": "worktop build src/index.ts --minify"
+	},
+	"homepage": "https://github.com/Inrixia/LABlackmarket#readme",
+	"dependencies": {
+		"@inrixia/cfworker-helpers": "github:Inrixia/cfworker-helpers",
+		"cloudflare-discord-bot": "^0.0.4",
+		"itty-router": "^2.6.1"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^3.11.0",
+		"@esbuild-plugins/node-modules-polyfill": "^0.1.4",
+		"tslib": "^2.4.0",
+		"worktop.build": "^0.0.5"
+	}
 }
