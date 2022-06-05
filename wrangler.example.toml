@@ -6,6 +6,10 @@ route = "lablackmarket.spookelton.net/*"
 
 compatibility_date = "2022-06-05"
 
+kv_namespaces = [
+         { binding = "listings", id = "" }
+]
+
 [build]
 command = "npm install && npm run build"
 [build.upload]
