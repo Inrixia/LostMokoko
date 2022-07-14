@@ -10,6 +10,11 @@ import {
 	RESTGetAPIChannelMessageResult,
 	RESTGetAPIChannelMessageReactionUsersResult,
 	MessageFlags,
+	RESTPatchAPIWebhookJSONBody,
+	RESTPatchAPIApplicationCommandJSONBody,
+	RESTPatchAPIApplicationCommandResult,
+	RESTPatchAPIChannelMessageJSONBody,
+	RESTPatchAPIInteractionFollowupJSONBody,
 } from "discord-api-types/v10";
 import { errResponse } from "./helpers";
 
@@ -31,7 +36,7 @@ export const reactMentions: Command<InteractionDataType.ChatInput> = [
 			},
 		],
 	},
-	async (interaction, env: EnvInterface) => {
+	async (interaction, env: EnvInterface, context: ExecutionContext) => {
 		const userID = interaction?.member?.user.id;
 
 		const headers = {
@@ -54,35 +59,49 @@ export const reactMentions: Command<InteractionDataType.ChatInput> = [
 
 		if (channelMessage.reactions === undefined || channelMessage.reactions.length === 0) return errResponse(new Error("There are no reactions on this message"));
 
-		const reactionsWithUsers = await Promise.all(
-			channelMessage.reactions
-				.filter((reaction) => reaction.emoji.name !== null)
-				.map(async (reaction) => {
-					const reactionUsers = await fetchWithTimeout(
-						`${RouteBases.api}${Routes.channelMessageReaction(interaction.channel_id, channelMessage.id, reaction.emoji.name!)}`,
-						{
-							headers,
-						}
-					).then((response) => response.json<RESTGetAPIChannelMessageReactionUsersResult>());
+		context.waitUntil(
+			new Promise(async (resolve) => {
+				const reactionsWithUsers = await Promise.all(
+					channelMessage
+						.reactions!.filter((reaction) => reaction.emoji.name !== null)
+						.map(async (reaction) => {
+							const reactionUsers = await fetchWithTimeout(
+								`${RouteBases.api}${Routes.channelMessageReaction(interaction.channel_id, channelMessage.id, reaction.emoji.name!)}`,
+								{
+									headers,
+								}
+							).then((response) => response.json<RESTGetAPIChannelMessageReactionUsersResult>());
 
-					return {
-						...reaction,
-						reactionUsers: includeOwner?.value ? reactionUsers : reactionUsers.filter((user) => user.id !== channelMessage.author.id),
-					};
-				})
+							return {
+								...reaction,
+								reactionUsers: includeOwner?.value ? reactionUsers : reactionUsers.filter((user) => user.id !== channelMessage.author.id),
+							};
+						})
+				);
+
+				const content = reactionsWithUsers
+					.filter((reaction) => reaction.reactionUsers.length !== 0)
+					.reduce((s, reaction) => `${s}\n${reaction.emoji.name} - ${reaction.reactionUsers.reduce((s, user) => `${s}<@${user.id}>, `, "")}`, "");
+
+				const patchBody: RESTPatchAPIInteractionFollowupJSONBody = {
+					content,
+					allowed_mentions: {
+						users: [userID!],
+					},
+				};
+
+				fetch(`${RouteBases.api}${Routes.webhookMessage(env.CLIENT_ID, interaction.token)}`, {
+					method: "PATCH",
+					headers: { Authorization: `Bot ${env.CLIENT_SECRET}`, "Content-Type": "application/json" },
+					body: JSON.stringify(patchBody),
+				}).then(resolve);
+			})
 		);
 
 		return {
-			type: InteractionResponseType.ChannelMessageWithSource,
+			type: InteractionResponseType.DeferredChannelMessageWithSource,
 			data: {
 				flags: MessageFlags.Ephemeral,
-				content: reactionsWithUsers.reduce(
-					(s, reaction) => `${s}\n${reaction.emoji.name} - ${reaction.reactionUsers.reduce((s, user) => `${s}<@${user.id}>, `, "")}`,
-					""
-				),
-				allowed_mentions: {
-					users: [userID!],
-				},
 			},
 		};
 	},

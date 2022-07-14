@@ -34,13 +34,13 @@ const init = (env: EnvInterface) => {
 import { Router } from "itty-router";
 const router = Router();
 
-router.all("*", (req: LRequest, env: EnvInterface) => env.applicationCommandHandler(req, env));
+router.all("*", (...args) => args[1].applicationCommandHandler(...args));
 
 export default {
-	fetch: async (req: LRequest, env: EnvInterface) => {
+	fetch: async (req: LRequest, env: EnvInterface, context: ExecutionContext) => {
 		try {
 			init(env);
-			return router.handle(req, env);
+			return router.handle(req, env, context);
 		} catch (err) {
 			return genericResponse(500, <Error>err);
 		}
