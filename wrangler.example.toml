@@ -1,14 +1,14 @@
-name = "api"
+name = "lostmokoko"
 type = "javascript"
 zone_id = ""
 account_id = ""
-route = "lablackmarket.spookelton.net/*"
+route = "lostmokoko.spookelton.net/*"
 
 compatibility_date = "2022-06-05"
 
-kv_namespaces = [
-         { binding = "listings", id = "" }
-]
+# kv_namespaces = [
+#     { binding = "listings", id = "" }
+# ]
 
 [build]
 command = "npm install && npm run build"
